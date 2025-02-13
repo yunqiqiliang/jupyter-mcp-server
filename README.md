@@ -38,12 +38,12 @@ jupyter lab --port 8888 --IdentityProvider.token MY_TOKEN --ip 0.0.0.0
 To use this with Claude Desktop, add the following to your claude_desktop_config.json:
 
 > [!IMPORTANT] 
-> Ensure the port and token match those used in the `jupyter lab` command.
+> Ensure the port of the `SERVER_URL`and `TOKEN` match those used in the `jupyter lab` command.
 > The `NOTEBOOK_PATH` should be relative to the directory where JupyterLab was started.
 
 ### MacOS and Windows
 
-```
+```json
 {
   "mcpServers": {
     "jupyter": {
@@ -72,7 +72,7 @@ To use this with Claude Desktop, add the following to your claude_desktop_config
 
 ### Linux
 
-```
+```json
 {
   "mcpServers": {
     "jupyter": {
