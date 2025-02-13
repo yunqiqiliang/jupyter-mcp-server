@@ -8,6 +8,8 @@ SHELL=/bin/bash
 
 .PHONY: clean build
 
+VERSION = "0.0.1"
+
 default: all ## Default target is all.
 
 help: ## display this help.
@@ -27,3 +29,9 @@ build:
 
 clean: ## clean
 	git clean -fdx
+
+build-docker:
+	docker build -t datalayer/jupyter-mcp-server:${VERSION} .
+
+push-docker:
+	docker push datalayer/jupyter-mcp-server:${VERSION}
