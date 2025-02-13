@@ -13,7 +13,7 @@
 [![Github Actions Status](https://github.com/datalayer/jupyter-mcp-server/workflows/Build/badge.svg)](https://github.com/datalayer/jupyter-mcp-server/actions/workflows/build.yml)
 [![PyPI - Version](https://img.shields.io/pypi/v/jupyter-mcp-server)](https://pypi.org/project/jupyter-mcp-server)
 
-Jupyter MCP Server is a **Model Context Protocol (MCP)** server implementation that provides interaction with Jupyter notebooks 📓 running in a local JupyterLab 💻.
+Jupyter MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) server implementation that provides interaction with Jupyter notebooks 📓 running in a local JupyterLab 💻.
 
 ![Jupyter MCP Server](https://assets.datalayer.tech/jupyter-mcp/jupyter-mcp-server-claude-demo.gif)
 
@@ -116,7 +116,7 @@ The server currently offers 2 tools:
   - Input:
     - `cell_content`(string): Markdown content
   - Returns: Success message
-  
+
 ## Building
 
 ```bash
