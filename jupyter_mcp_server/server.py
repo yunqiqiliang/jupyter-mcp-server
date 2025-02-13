@@ -1,3 +1,7 @@
+# Copyright (c) 2023-2024 Datalayer, Inc.
+#
+# BSD 3-Clause License
+
 import logging
 
 from jupyter_nbmodel_client import NbModelClient, get_jupyter_notebook_websocket_url
