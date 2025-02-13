@@ -30,6 +30,7 @@ Then, start JupyterLab with the following command:
 ```bash
 jupyter lab --port 8888 --IdentityProvider.token MY_TOKEN --ip 0.0.0.0 
 ````
+
 > [!NOTE] 
 > The `--ip` is set to `0.0.0.0` to allow the MCP server running in a Docker container to access your local JupyterLab.
 
@@ -58,7 +59,7 @@ To use this with Claude Desktop, add the following to your claude_desktop_config
         "TOKEN",
         "-e",
         "NOTEBOOK_PATH",
-        "datalayer/jupyter-mcp-server:0.0.1"
+        "datalayer/jupyter-mcp-server:latest"
       ],
       "env": {
         "SERVER_URL": "http://host.docker.internal:8888",
@@ -88,7 +89,7 @@ To use this with Claude Desktop, add the following to your claude_desktop_config
         "-e",
         "NOTEBOOK_PATH",
         "--network=host",
-        "datalayer/jupyter-mcp-server:0.0.1"
+        "datalayer/jupyter-mcp-server:latest"
       ],
       "env": {
         "SERVER_URL": "http://localhost:8888",
@@ -115,6 +116,7 @@ The server currently offers 2 tools:
   - Input:
     - `cell_content`(string): Markdown content
   - Returns: Success message
+  
 ## Building
 
 ```bash

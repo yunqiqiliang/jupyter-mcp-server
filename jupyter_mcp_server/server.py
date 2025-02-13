@@ -15,6 +15,8 @@ TOKEN = os.getenv("TOKEN", "MY_TOKEN")
 
 logger = logging.getLogger(__name__)
 
+kernel = KernelClient(server_url=SERVER_URL, token=TOKEN)
+kernel.start()
 
 @mcp.tool()
 def add_execute_code_cell(cell_content: str) -> str:
@@ -26,8 +28,6 @@ def add_execute_code_cell(cell_content: str) -> str:
     Returns:
         str: Success message
     """
-    kernel = KernelClient(server_url=SERVER_URL, token=TOKEN)
-    kernel.start()
     notebook = NbModelClient(get_jupyter_notebook_websocket_url(server_url=SERVER_URL, token=TOKEN, path=NOTEBOOK_PATH))
     notebook.start()
     
@@ -35,7 +35,6 @@ def add_execute_code_cell(cell_content: str) -> str:
     notebook.execute_cell(cell_index, kernel)
     
     notebook.stop()
-    kernel.stop()
     
     return "Cell executed"
         

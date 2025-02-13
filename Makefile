@@ -32,6 +32,8 @@ clean: ## clean
 
 build-docker:
 	docker build -t datalayer/jupyter-mcp-server:${VERSION} .
+	docker image tag datalayer/jupyter-mcp-server:${VERSION} datalayer/jupyter-mcp-server:latest
 
 push-docker:
 	docker push datalayer/jupyter-mcp-server:${VERSION}
+	docker push datalayer/jupyter-mcp-server:latest
