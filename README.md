@@ -12,6 +12,7 @@
 
 [![Github Actions Status](https://github.com/datalayer/jupyter-mcp-server/workflows/Build/badge.svg)](https://github.com/datalayer/jupyter-mcp-server/actions/workflows/build.yml)
 [![PyPI - Version](https://img.shields.io/pypi/v/jupyter-mcp-server)](https://pypi.org/project/jupyter-mcp-server)
+[![smithery badge](https://smithery.ai/badge/@datalayer/jupyter-mcp-server)](https://smithery.ai/server/@datalayer/jupyter-mcp-server)
 
 Jupyter MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) server implementation that provides interaction with Jupyter notebooks 📓 running in a local JupyterLab 💻.
 
@@ -100,6 +101,7 @@ To use this with Claude Desktop, add the following to your claude_desktop_config
   }
 }
 ```
+
 ## Components
 
 ### Tools
@@ -123,3 +125,10 @@ The server currently offers 2 tools:
 docker build -t datalayer/jupyter-mcp-server .
 ```
 
+## Installing via Smithery
+
+To install Jupyter MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@datalayer/jupyter-mcp-server):
+
+```bash
+npx -y @smithery/cli install @datalayer/jupyter-mcp-server --client claude
+```
