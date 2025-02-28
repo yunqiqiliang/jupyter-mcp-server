@@ -2,6 +2,10 @@
 #
 # BSD 3-Clause License
 
+[build-system]
+requires = ["hatchling~=1.21"]
+build-backend = "hatchling.build"
+
 [project]
 name = "jupyter_mcp_server"
 authors = [{ name = "Datalayer", email = "info@datalayer.io" }]
