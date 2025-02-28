@@ -20,6 +20,7 @@ dependencies = [
     "jupyter-kernel-client>=0.5.1",
     "jupyter-nbmodel-client==0.6.0",
     "mcp[cli]>=1.2.1",
+    "rich"
 ]
 
 [project.optional-dependencies]

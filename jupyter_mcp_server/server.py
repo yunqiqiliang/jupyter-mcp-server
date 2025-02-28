@@ -4,6 +4,8 @@ import os
 from jupyter_kernel_client import KernelClient
 from jupyter_nbmodel_client import NbModelClient, get_jupyter_notebook_websocket_url
 from mcp.server.fastmcp import FastMCP
+from rich.console import Console
+from rich.logging import RichHandler
 
 # Initialize FastMCP server
 mcp = FastMCP("notebook")
@@ -14,7 +16,16 @@ NOTEBOOK_PATH = os.getenv("NOTEBOOK_PATH", "notebook.ipynb")
 SERVER_URL = os.getenv("SERVER_URL", "http://localhost:8888")
 TOKEN = os.getenv("TOKEN", "MY_TOKEN")
 
+handlers = []
+handlers.append(RichHandler(console=Console(stderr=True), rich_tracebacks=True))
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=handlers,
+)
+
 logger = logging.getLogger(__name__)
+
 
 kernel = KernelClient(server_url=SERVER_URL, token=TOKEN)
 kernel.start()
@@ -51,6 +62,8 @@ def add_execute_code_cell(cell_content: str) -> str:
     Returns:
         str: Cell output
     """
+    logger.info("Adding and executing code cell")
+
     notebook = NbModelClient(
         get_jupyter_notebook_websocket_url(server_url=SERVER_URL, token=TOKEN, path=NOTEBOOK_PATH)
     )
@@ -81,6 +94,8 @@ def add_markdown_cell(cell_content: str) -> str:
     Returns:
         str: Success message
     """
+    logger.info("Adding markdown cell")
+
     notebook = NbModelClient(
         get_jupyter_notebook_websocket_url(server_url=SERVER_URL, token=TOKEN, path=NOTEBOOK_PATH)
     )
@@ -108,6 +123,7 @@ def download_earth_data_granules(
     Returns:
         str: Cell output
     """
+    logger.info("Downloading Earth data granules")
 
     search_params = {"short_name": short_name, "count": count, "cloud_hosted": True}
 
