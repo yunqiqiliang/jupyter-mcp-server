@@ -102,8 +102,8 @@ def download_earth_data_granules(
         short_name: Short name of the Earth dataset to download.
         count: Number of data granules to download.
         temporal: (Optional) Temporal range in the format (date_from, date_to).
-        (Optional) Bounding box in the format (lower_left_lon, lower_left_lat, upper_right_lon,
-        upper_right_lat).
+        bounding_box: (Optional) Bounding box in the format (lower_left_lon, lower_left_lat,
+        upper_right_lon, upper_right_lat).
 
     Returns:
         str: Cell output
