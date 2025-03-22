@@ -55,7 +55,7 @@ claude-linux:
 		--extra-experimental-features flakes \
 		--extra-experimental-features nix-command
 
-jupyterlab: ## jupyterlab
+jupyterlab:
 	pip uninstall -y pycrdt datalayer_pycrdt
 	pip install datalayer_pycrdt
 	jupyter lab \
