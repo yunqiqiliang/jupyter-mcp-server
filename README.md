@@ -53,7 +53,7 @@ You can also run `make jupyterlab`.
 >
 > The `--ip` is set to `0.0.0.0` to allow the MCP server running in a Docker container to access your local JupyterLab.
 
-## Usage with Claude Desktop
+## Use with Claude Desktop
 
 Claude Desktop can be downloaded [from this page](https://claude.ai/download) for macOS and Windows.
 
@@ -76,7 +76,7 @@ To use this with Claude Desktop, add the following to your `claude_desktop_confi
 >
 > The `NOTEBOOK_PATH` should be relative to the directory where JupyterLab was started.
 
-### macOS and Windows
+### Claude Configuration on macOS and Windows
 
 ```json
 {
@@ -105,7 +105,7 @@ To use this with Claude Desktop, add the following to your `claude_desktop_confi
 }
 ```
 
-### Linux
+### Claude Configuration on Linux
 
 ```bash
 CLAUDE_CONFIG=${HOME}/.config/Claude/claude_desktop_config.json
@@ -141,20 +141,20 @@ cat $CLAUDE_CONFIG
 
 ## Tools
 
-The server currently offers 2 tools.
-
-### `add_execute_code_cell`
-
-- Add and execute a code cell in a Jupyter notebook.
-- Input:
-  - `cell_content`(string): Code to be executed
-- Returns: Success message
+The Jupyter MCP Server offers 2 tools.
 
 ### `add_markdown_cell`
 
 - Add a markdown cell in a Jupyter notebook.
 - Input:
   - `cell_content`(string): Markdown content
+- Returns: Success message
+
+### `add_execute_code_cell`
+
+- Add and execute a code cell in a Jupyter notebook.
+- Input:
+  - `cell_content`(string): Code to be executed
 - Returns: Success message
 
 ## Installing via Smithery
