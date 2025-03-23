@@ -136,7 +136,11 @@ cat $CLAUDE_CONFIG
 
 ### Prompt
 
-You can now prompt via the Claude client, the result should be visible in your Jupyter notebook (confirm you accept to use the tools when asked by Claude). For example, ask `create a many plot variant examples with matplolib in jupyter`.
+You can now prompt via the Claude client, the result should be visible in your Jupyter notebook (confirm you accept to use the tools when asked by Claude). 
+
+```
+create matplolib examples with many variants in jupyter
+```
 
 ![Jupyter MCP Server](https://assets.datalayer.tech/jupyter-mcp/jupyter-mcp-server-claude-demo.gif)
 
