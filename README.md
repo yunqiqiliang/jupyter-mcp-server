@@ -1,9 +1,3 @@
-<!--
-  ~ Copyright (c) 2023-2024 Datalayer, Inc.
-  ~
-  ~ BSD 3-Clause License
--->
-
 [![Datalayer](https://assets.datalayer.tech/datalayer-25.svg)](https://datalayer.io)
 
 [![Become a Sponsor](https://img.shields.io/static/v1?label=Become%20a%20Sponsor&message=%E2%9D%A4&logo=GitHub&style=flat&color=1ABC9C)](https://github.com/sponsors/datalayer)
@@ -14,31 +8,32 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/jupyter-mcp-server)](https://pypi.org/project/jupyter-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@datalayer/jupyter-mcp-server)](https://smithery.ai/server/@datalayer/jupyter-mcp-server)
 
-Jupyter MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) server implementation that provides interaction with 📓 Jupyter notebooks running in a 💻 local JupyterLab.
+Jupyter MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server implementation that provides interaction with 📓 Jupyter notebooks running in any JupyterLab (works also with your 💻 local JupyterLab).
 
 ![Jupyter MCP Server](https://assets.datalayer.tech/jupyter-mcp/jupyter-mcp-server-claude-demo.gif)
 
 ## Docker Image
 
-Prepull the MCP server Docker image.
+We recommend to run the MCP server in a Docker image. Prepull the MCP server Docker image.
 
 ```bash
 make pull-docker
 ```
 
-Optionally, you can build it from source.
+Optionally, you can build the Docker image it from source.
 
 ```bash
-# You can run `make pull-docker`
-docker build -t datalayer/jupyter-mcp-server .
+make build-docker
 ```
 
 ## Start JupyterLab
 
-Make sure you have the following installed. The modifications made on the notebook can be seen thanks to [Jupyter Real Time Collaboration](https://jupyterlab.readthedocs.io/en/stable/user/rtc.html) (RTC).
+Make sure you have the following installed. The collaboration package is needed as the modifications made on the notebook can be seen thanks to [Jupyter Real Time Collaboration](https://jupyterlab.readthedocs.io/en/stable/user/rtc.html).
 
 ```bash
 pip install jupyterlab jupyter-collaboration ipykernel
+pip uninstall -y pycrdt datalayer_pycrdt
+pip install datalayer_pycrdt
 ```
 
 Then, start JupyterLab with the following command.
@@ -68,7 +63,7 @@ NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
   --extra-experimental-features nix-command
 ```
 
-To use this with Claude Desktop, add the following to your `claude_desktop_config.json` (read more on the [MCP documenation website](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server)).
+To use this with Claude Desktop, add the following to your `claude_desktop_config.json` (read more on the [MCP documentation website](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server)).
 
 > [!IMPORTANT] 
 >
@@ -138,6 +133,12 @@ cat <<EOF > $CLAUDE_CONFIG
 EOF
 cat $CLAUDE_CONFIG
 ```
+
+### Prompt
+
+You can now prompt via the Claude client, the result should be visible in your Jupyter notebook (confirm you accept to use the tools when asked by Claude). For example, ask `create a many plot variant examples with matplolib in jupyter`.
+
+![Jupyter MCP Server](https://assets.datalayer.tech/jupyter-mcp/jupyter-mcp-server-claude-demo.gif)
 
 ## Tools
 
