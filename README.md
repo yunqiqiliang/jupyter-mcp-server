@@ -29,7 +29,8 @@ make pull-docker
 Optionally, you can build it from source.
 
 ```bash
-make build-docker
+# You can run `make pull-docker`
+docker build -t datalayer/jupyter-mcp-server .
 ```
 
 ## Start JupyterLab
@@ -40,13 +41,13 @@ Make sure you have the following installed. The modifications made on the notebo
 pip install jupyterlab jupyter-collaboration ipykernel
 ```
 
-Then, start JupyterLab with the following command:
+Then, start JupyterLab with the following command.
 
 ```bash
-jupyter lab --port 8888 --IdentityProvider.token --ServerApp.root_dir ./dev/content MY_TOKEN --ip 0.0.0.0
+jupyter lab --port 8888 --IdentityProvider.token MY_TOKEN --ServerApp.root_dir ./dev/content --ip 0.0.0.0
 ```
 
-You can also run `make jupyterlab`
+You can also run `make jupyterlab`.
 
 > [!NOTE] 
 >
@@ -69,8 +70,10 @@ NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
 
 To use this with Claude Desktop, add the following to your `claude_desktop_config.json` (read more on the [MCP documenation website](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server)).
 
-> [!IMPORTANT]
+> [!IMPORTANT] 
+>
 > Ensure the port of the `SERVER_URL`and `TOKEN` match those used in the `jupyter lab` command.
+>
 > The `NOTEBOOK_PATH` should be relative to the directory where JupyterLab was started.
 
 ### macOS and Windows
@@ -153,12 +156,6 @@ The server currently offers 2 tools.
 - Input:
   - `cell_content`(string): Markdown content
 - Returns: Success message
-
-## Building
-
-```bash
-docker build -t datalayer/jupyter-mcp-server .
-```
 
 ## Installing via Smithery
 

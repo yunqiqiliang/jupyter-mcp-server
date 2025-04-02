@@ -56,6 +56,8 @@ claude-linux:
 		--extra-experimental-features nix-command
 
 jupyterlab: ## jupyterlab
+	pip uninstall -y pycrdt datalayer_pycrdt
+	pip install datalayer_pycrdt
 	jupyter lab \
 		--port 8888 \
 		--ip 0.0.0.0 \
