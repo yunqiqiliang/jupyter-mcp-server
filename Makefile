@@ -34,6 +34,30 @@ build-docker:
 	docker build -t datalayer/jupyter-mcp-server:${VERSION} .
 	docker image tag datalayer/jupyter-mcp-server:${VERSION} datalayer/jupyter-mcp-server:latest
 
+start-docker:
+	docker run -i --rm \
+	  -e SERVER_URL=http://localhost:8888 \
+	  -e TOKEN=MY_TOKEN \
+	  -e NOTEBOOK_PATH=notebook.ipynb \
+	  --network=host \
+	  datalayer/jupyter-mcp-server:latest
+
+pull-docker:
+	docker image pull datalayer/jupyter-mcp-server:latest
+
 push-docker:
 	docker push datalayer/jupyter-mcp-server:${VERSION}
 	docker push datalayer/jupyter-mcp-server:latest
+
+claude-linux:
+	NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
+		--impure \
+		--extra-experimental-features flakes \
+		--extra-experimental-features nix-command
+
+jupyterlab: ## jupyterlab
+	jupyter lab \
+		--port 8888 \
+		--ip 0.0.0.0 \
+		--ServerApp.root_dir ./dev/content \
+		--IdentityProvider.token MY_TOKEN

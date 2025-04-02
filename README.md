@@ -14,9 +14,23 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/jupyter-mcp-server)](https://pypi.org/project/jupyter-mcp-server)
 [![smithery badge](https://smithery.ai/badge/@datalayer/jupyter-mcp-server)](https://smithery.ai/server/@datalayer/jupyter-mcp-server)
 
-Jupyter MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) server implementation that provides interaction with Jupyter notebooks 📓 running in a local JupyterLab 💻.
+Jupyter MCP Server is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) server implementation that provides interaction with 📓 Jupyter notebooks running in a 💻 local JupyterLab.
 
 ![Jupyter MCP Server](https://assets.datalayer.tech/jupyter-mcp/jupyter-mcp-server-claude-demo.gif)
+
+## Docker Image
+
+Prepull the MCP server Docker image.
+
+```bash
+make pull-docker
+```
+
+Optionally, you can build it from source.
+
+```bash
+make build-docker
+```
 
 ## Start JupyterLab
 
@@ -29,21 +43,37 @@ pip install jupyterlab jupyter-collaboration ipykernel
 Then, start JupyterLab with the following command:
 
 ```bash
-jupyter lab --port 8888 --IdentityProvider.token MY_TOKEN --ip 0.0.0.0
+jupyter lab --port 8888 --IdentityProvider.token --ServerApp.root_dir ./dev/content MY_TOKEN --ip 0.0.0.0
 ```
 
-> [!NOTE]
+You can also run `make jupyterlab`
+
+> [!NOTE] 
+>
 > The `--ip` is set to `0.0.0.0` to allow the MCP server running in a Docker container to access your local JupyterLab.
 
 ## Usage with Claude Desktop
 
-To use this with Claude Desktop, add the following to your claude_desktop_config.json:
+Claude Desktop can be downloaded [from this page](https://claude.ai/download) for macOS and Windows.
+
+For Linux, we had success using this [UNOFFICIAL build script based on nix](https://github.com/k3d3/claude-desktop-linux-flake)
+
+```bash
+# ⚠️ UNOFFICIAL
+# You can also run `make claude-linux`
+NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
+  --impure \
+  --extra-experimental-features flakes \
+  --extra-experimental-features nix-command
+```
+
+To use this with Claude Desktop, add the following to your `claude_desktop_config.json` (read more on the [MCP documenation website](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server)).
 
 > [!IMPORTANT]
 > Ensure the port of the `SERVER_URL`and `TOKEN` match those used in the `jupyter lab` command.
 > The `NOTEBOOK_PATH` should be relative to the directory where JupyterLab was started.
 
-### MacOS and Windows
+### macOS and Windows
 
 ```json
 {
@@ -74,7 +104,9 @@ To use this with Claude Desktop, add the following to your claude_desktop_config
 
 ### Linux
 
-```json
+```bash
+CLAUDE_CONFIG=${HOME}/.config/Claude/claude_desktop_config.json
+cat <<EOF > $CLAUDE_CONFIG
 {
   "mcpServers": {
     "jupyter": {
@@ -100,40 +132,27 @@ To use this with Claude Desktop, add the following to your claude_desktop_config
     }
   }
 }
+EOF
+cat $CLAUDE_CONFIG
 ```
 
-## Components
+## Tools
 
-### Tools
+The server currently offers 2 tools.
 
-The server currently offers 3 tools:
-
-1. `add_execute_code_cell`
+### `add_execute_code_cell`
 
 - Add and execute a code cell in a Jupyter notebook.
 - Input:
-  - `cell_content`(string): Code to be executed.
-- Returns: Cell output.
+  - `cell_content`(string): Code to be executed
+- Returns: Success message
 
-2. `add_markdown_cell`
+### `add_markdown_cell`
 
 - Add a markdown cell in a Jupyter notebook.
 - Input:
-  - `cell_content`(string): Markdown content.
-- Returns: Success message.
-
-3. `download_earth_data_granules`
-
-   ⚠️ We plan to migrate this tool to a separate repository in the future as it is specific to Geospatial analysis.
-
-- Add a code cell in a Jupyter notebook to download Earth data granules from NASA Earth Data.
-- Input:
-  - `folder_name`(string): Local folder name to save the data.
-  - `short_name`(string): Short name of the Earth dataset to download.
-  - `count`(int): Number of data granules to download.
-  - `temporal` (tuple): (Optional) Temporal range in the format (date_from, date_to).
-  - `bounding_box` (tuple): (Optional) Bounding box in the format (lower_left_lon, lower_left_lat, upper_right_lon, upper_right_lat).
-- Returns: Cell output.
+  - `cell_content`(string): Markdown content
+- Returns: Success message
 
 ## Building
 
