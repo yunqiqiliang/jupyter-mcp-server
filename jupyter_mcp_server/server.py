@@ -414,6 +414,76 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
         logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
         return f"[Error adding {cell_type} cell: {e}]"
 
+@mcp.tool()
+async def add_cell_create_clickzetta_session(
+    cell_type: str = "code", 
+    index: Optional[int] = None, 
+    config_file: str = "config.json"
+) -> str:
+    """
+    Adds a code cell with fixed content at specified index (or appends).
+    Uses robust Yjs type creation including YMap for metadata.
+
+    Args:
+        cell_type: Must be 'code' or 'markdown'. Default is 'code'.
+        index: 0-based index to insert at; appends if None or invalid.
+        config_file: Path to the configuration file. Defaults to 'config.json'.
+    """
+    tool_name = "add_cell_create_clickzetta_session"
+    logger.info(f"Executing {tool_name}. Type: {cell_type}, Index: {index}, Config File: {config_file}")
+
+    if cell_type != "code":
+        return f"[Error: Invalid cell_type '{cell_type}'. Only 'code' is supported for this operation.]"
+
+    # Fixed content for the cell
+    content = f"""from clickzetta.zettapark.session import Session
+import json
+
+# 从配置文件中读取参数
+with open('{config_file}', 'r') as config_file:
+    config = json.load(config_file)
+
+print("正在连接到云器Lakehouse.....\\n")
+# 创建会话
+session = Session.builder.configs(config).create()
+print("连接成功！以下是session的上下文信息。现在可以通过session.sql('sql code').to_pandas()的方式使用刚创建的session在Notebook里执行SQL获得查询结果...\\n")
+
+session.sql("SELECT current_instance_id(), current_workspace(), current_workspace_id(), current_schema(), current_user(), current_user_id(), current_vcluster()").to_pandas()
+"""
+
+    try:
+        async with notebook_connection(tool_name, modify=True) as notebook:
+            ydoc = notebook._doc
+            ycells = ydoc._ycells
+            num_cells = len(ycells)
+
+            insert_index = num_cells if index is None or not (0 <= index <= num_cells) else index
+            log_index_msg = f"Appending at index {insert_index}" if index is None or index >= num_cells else f"Inserting at index {insert_index}"
+            logger.info(f"[{tool_name}] {log_index_msg}.")
+
+            # Prepare cell dict with explicit Yjs types
+            new_cell_pre_ymap: Dict[str, Any] = {
+                "cell_type": cell_type,
+                "source": YText(content)
+            }
+
+            # Create a code cell with metadata, outputs, and execution_count
+            base = nbformat.v4.new_code_cell(source="")
+            new_cell_pre_ymap["metadata"] = YMap(base.metadata)
+            new_cell_pre_ymap["outputs"] = YArray()
+            new_cell_pre_ymap["execution_count"] = None
+
+            # Perform insertion in transaction
+            with ydoc.ydoc.transaction():
+                ycell_map = YMap(new_cell_pre_ymap)
+                ycells.insert(insert_index, ycell_map)
+
+            logger.info(f"[{tool_name}] Successfully inserted {cell_type} cell at index {insert_index}.")
+            return f"{cell_type.capitalize()} cell added at index {insert_index}."
+
+    except Exception as e:
+        logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
+        return f"[Error adding {cell_type} cell: {e}]"
 
 @mcp.tool()
 async def add_code_cell_on_bottom(cell_content: str) -> str:
