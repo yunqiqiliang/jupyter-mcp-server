@@ -31,8 +31,8 @@ clean: ## clean
 	git clean -fdx
 
 build-docker:
-	docker build -t datalayer/jupyter-mcp-server:${VERSION} .
-	docker image tag datalayer/jupyter-mcp-server:${VERSION} datalayer/jupyter-mcp-server:latest
+	docker build -t yunqiqiliang/jupyter-mcp-server:${VERSION} .
+	docker image tag yunqiqiliang/jupyter-mcp-server:${VERSION} yunqiqiliang/jupyter-mcp-server:latest
 
 start-docker:
 	docker run -i --rm \
@@ -40,14 +40,14 @@ start-docker:
 	  -e TOKEN=MY_TOKEN \
 	  -e NOTEBOOK_PATH=notebook.ipynb \
 	  --network=host \
-	  datalayer/jupyter-mcp-server:latest
+	  yunqiqiliang/jupyter-mcp-server:latest
 
 pull-docker:
-	docker image pull datalayer/jupyter-mcp-server:latest
+	docker image pull yunqiqiliang/jupyter-mcp-server:latest
 
 push-docker:
-	docker push datalayer/jupyter-mcp-server:${VERSION}
-	docker push datalayer/jupyter-mcp-server:latest
+	docker push yunqiqiliang/jupyter-mcp-server:${VERSION}
+	docker push yunqiqiliang/jupyter-mcp-server:latest
 
 claude-linux:
 	NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
