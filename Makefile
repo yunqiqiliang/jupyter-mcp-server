@@ -31,23 +31,23 @@ clean: ## clean
 	git clean -fdx
 
 build-docker:
-	docker build -t yunqiqiliang/jupyter-mcp-server:${VERSION} .
-	docker image tag yunqiqiliang/jupyter-mcp-server:${VERSION} yunqiqiliang/jupyter-mcp-server:latest
+	docker build -t czqiliang/jupyter-mcp-server:${VERSION} .
+	docker image tag czqiliang/jupyter-mcp-server:${VERSION} czqiliang/jupyter-mcp-server:latest
 
 start-docker:
 	docker run -i --rm \
-	  -e SERVER_URL=http://localhost:8888 \
-	  -e TOKEN=MY_TOKEN \
+	  -e SERVER_URL=http://127.0.0.1:8888 \
+	  -e TOKEN=YOUR_SECURE_TOKEN \
 	  -e NOTEBOOK_PATH=notebook.ipynb \
 	  --network=host \
-	  yunqiqiliang/jupyter-mcp-server:latest
+	  czqiliang/jupyter-mcp-server:latest
 
 pull-docker:
-	docker image pull yunqiqiliang/jupyter-mcp-server:latest
+	docker image pull czqiliang/jupyter-mcp-server:latest
 
 push-docker:
-	docker push yunqiqiliang/jupyter-mcp-server:${VERSION}
-	docker push yunqiqiliang/jupyter-mcp-server:latest
+	docker push czqiliang/jupyter-mcp-server:${VERSION}
+	docker push czqiliang/jupyter-mcp-server:latest
 
 claude-linux:
 	NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
