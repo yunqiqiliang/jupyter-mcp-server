@@ -425,7 +425,7 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
         "创建session后，在其它cell里也可以使用刚创建的session在Notebook里操作Clickzetta Dataframe."
         "在建立session的时候，已经导入from clickzetta.zettapark.session import DataFrame,import clickzetta.zettapark.functions as F, import clickzetta.zettapark.types as T"
         "在后续需要的时候，也可以参考以上导入方式导入需要的模块."
-        "后续进行可视化分析的时候，charts里不要显示中文，用英文，否则显示有问题."
+        "在进行数据可视化分析的时候，请注意matplotlib.pyplot生成chart时使用英文描述而不是中文，避免字体问题.或者必须做中文字体显示的话，请使用中文字体的处理方式."
     ),
     # parameters=(
     #     mcp.parameter(
@@ -518,104 +518,60 @@ session.sql("SELECT current_instance_id(), current_workspace(), current_workspac
         logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
         return f"[Error adding {cell_type} cell: {e}]"
 
-# @mcp.tool()
-# async def add_cell_create_clickzetta_session(
-#     cell_type: str = "code", 
-#     index: Optional[int] = None, 
-#     config_file: str = "config.json"
-# ) -> str:
-#     """
-#     Adds a code cell with fixed content to create clickzetta sessionat specified index (or appends).
-#     clickzetta.zettapark is a python api library and is compatible with snowflake.snowpark, while the session is created, you could write snowflake.snowpark like python code in other cells.
-#     Uses robust Yjs type creation including YMap for metadata.
+@mcp.tool()
+async def list_notebook_directory() -> str:
+    """
+    Lists files and directories in the target notebook's location.
+    Directories are indicated with a trailing '/'. Helps find notebook paths.
+    """
+    tool_name = "list_notebook_directory"
+    logger.info(f"Executing {tool_name} tool.")
+    global NOTEBOOK_PATH # Need to read the current target
+    try:
+        current_dir = os.path.dirname(NOTEBOOK_PATH)
+        dir_display_name = current_dir if current_dir else "<Jupyter Root>"
+        logger.info(f"[{tool_name}] Listing contents of directory: '{dir_display_name}'")
 
-#     Args:
-#         cell_type: Must be 'code'. 
-#         index: 0-based index to insert at; appends if None or invalid.
-#         config_file: Path to the configuration file. Defaults to 'config.json'.
-#     """
-#     tool_name = "add_cell_create_clickzetta_session"
-#     logger.info(f"Executing {tool_name}. Type: {cell_type}, Index: {index}, Config File: {config_file}")
+        response = await _jupyter_api_request("GET", current_dir)
+        content_data = response.json()
 
-#     if cell_type != "code":
-#         return f"[Error: Invalid cell_type '{cell_type}'. Only 'code' is supported for this operation.]"
+        if content_data.get("type") != "directory":
+            return f"[Error: Path '{dir_display_name}' is not a directory]"
 
-#     # Fixed content for the cell
-#     content = f"""from clickzetta.zettapark.session import Session, DataFrame
-#     import clickzetta.zettapark.functions as F
-#     import clickzetta.zettapark.types as T
-# import json
+        items = content_data.get("content", [])
+        if not items:
+            return f"Directory '{dir_display_name}' is empty."
 
-# # 从配置文件中读取参数
-# with open('{config_file}', 'r') as config_file:
-#     config = json.load(config_file)
+        formatted_items = []
+        # Sort dirs first, then alphabetically (case-insensitive)
+        key_func = lambda x: (x.get('type') != 'directory', x.get('name','').lower())
+        for item in sorted(items, key=key_func):
+            name = item.get("name")
+            if name:
+                formatted_items.append(f"{name}/" if item.get("type") == "directory" else name)
 
-# print("正在连接到云器Lakehouse.....\\n")
-# # 创建会话
-# session = Session.builder.configs(config).create()
-# print("连接成功！以下是session的上下文信息。现在可以通过session.sql('sql code').to_pandas()的方式使用刚创建的session在Notebook里执行SQL获得查询结果...\\n")
+        logger.info(f"[{tool_name}] Found {len(formatted_items)} items in '{dir_display_name}'.")
+        return f"Contents of '{dir_display_name}':\n- " + "\n- ".join(formatted_items)
 
-# session.sql("SELECT current_instance_id(), current_workspace(), current_workspace_id(), current_schema(), current_user(), current_user_id(), current_vcluster()").to_pandas()
-# """
-
-#     try:
-#         async with notebook_connection(tool_name, modify=True) as notebook:
-#             ydoc = notebook._doc
-#             ycells = ydoc._ycells
-#             num_cells = len(ycells)
-
-#             insert_index = num_cells if index is None or not (0 <= index <= num_cells) else index
-#             log_index_msg = f"Appending at index {insert_index}" if index is None or index >= num_cells else f"Inserting at index {insert_index}"
-#             logger.info(f"[{tool_name}] {log_index_msg}.")
-
-#             # Prepare cell dict with explicit Yjs types
-#             new_cell_pre_ymap: Dict[str, Any] = {
-#                 "cell_type": cell_type,
-#                 "source": YText(content)
-#             }
-
-#             # Create a code cell with metadata, outputs, and execution_count
-#             base = nbformat.v4.new_code_cell(source="")
-#             new_cell_pre_ymap["metadata"] = YMap(base.metadata)
-#             new_cell_pre_ymap["outputs"] = YArray()
-#             new_cell_pre_ymap["execution_count"] = None
-
-#             # Perform insertion in transaction
-#             with ydoc.ydoc.transaction():
-#                 ycell_map = YMap(new_cell_pre_ymap)
-#                 ycells.insert(insert_index, ycell_map)
-
-#             logger.info(f"[{tool_name}] Successfully inserted {cell_type} cell at index {insert_index}.")
-#             return f"{cell_type.capitalize()} cell added at index {insert_index}."
-
-#     except Exception as e:
-#         logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
-#         return f"[Error adding {cell_type} cell: {e}]"
+    except ConnectionError as e:
+         return f"[Error listing directory: {e}]" # Error from helper
+    except Exception as e:
+        logger.error(f"[{tool_name}] Unexpected error: {e}", exc_info=True)
+        return f"[Unexpected Error in {tool_name}: {e}]"
 
 @mcp.tool()
-async def add_code_cell_on_bottom(cell_content: str) -> str:
+async def get_knowledge_to_do_visualization_data_analysis() -> str:
     """
-    (DEPRECATED - Use add_cell) Adds a code cell at the end of the notebook.
-    Kept for compatibility or if add_cell proves unstable.
+    While need visualization data analysis comments, this tool will be used to get the comments.
+    """
 
-    Args:
-        cell_content: Code content for the new cell.
-    """
-    # This now uses the library directly, which was deemed more stable previously
-    # If add_cell with manual YMap creation is stable, this could be removed.
-    tool_name = "add_code_cell_on_bottom"
-    logger.info(f"Executing {tool_name}.")
-    try:
-        # Use context manager even though we call library method
-        async with notebook_connection(tool_name, modify=True) as notebook:
-             _try_set_awareness(notebook, tool_name) # Set awareness if needed
-             # Use the library's potentially more reliable method
-             cell_index = notebook.add_code_cell(cell_content)
-             logger.info(f"[{tool_name}] Added code cell at index {cell_index} using library method.")
-             return f"Code cell added at index {cell_index}."
-    except Exception as e:
-        logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
-        return f"[Error adding code cell on bottom: {e}]"
+    tool_name = "get_visualization_data_analysis_comments"
+    logger.info(f"Executing {tool_name} tool.")
+    visualization_data_analysis_comments = ("The package matplotlib required for visualization analysis has been installed."
+                                            "When displaying Chinese characters in charts, please note that the fonts need to be specially processed, "
+                                            "or you can use English fonts directly in the charts.")
+
+    return f"[Visualization data analysis comments: {visualization_data_analysis_comments}]"
 
 
 @mcp.tool()

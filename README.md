@@ -107,6 +107,33 @@ docker build -t jupyter-mcp-server:latest .
 
 Make sure your `jupyter_mcp_env` conda environment is activated.
 
+Create config.json file and set your login infor as below:
+
+```json
+{
+    "username": "your clickzetta lakehouse user name",
+    "password": "your clickzetta lakehouse password",
+    "service": "api.clickzetta.com",
+    "instance": "your clickzetta lakehouse instance name",
+    "workspace": "your clickzetta lakehouse workspac name",
+    "schema": "your clickzetta lakehouse schema",
+    "vcluster": "your clickzetta lakehouse vcluster name",
+    "sdk_job_timeout": 60,
+    "hints": {
+      "sdk.job.timeout": 60,
+      "query_tag": "test_zettapark_vector_ns227206",
+      "cz.storage.parquet.vector.index.read.memory.cache": "true",
+      "cz.storage.parquet.vector.index.read.local.cache": "false",
+      "cz.sql.table.scan.push.down.filter": "true",
+      "cz.sql.table.scan.enable.ensure.filter": "true",
+      "cz.storage.always.prefetch.internal": "true",
+      "cz.optimizer.generate.columns.always.valid": "true",
+      "cz.sql.index.prewhere.enabled": "true",
+      "cz.storage.parquet.enable.io.prefetch": "false"
+    }
+  }
+```
+
 ```bash
 # Use a strong, unique token!
 # --ip=0.0.0.0 allows the Docker container to connect

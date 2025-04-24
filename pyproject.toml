@@ -29,7 +29,8 @@ dependencies = [
     "pandas>=1.3.0",        # 数据分析工具
     "scikit-learn>=1.0.0",  # 机器学习库
     "matplotlib>=3.5.0",    # 基础可视化库
-    "seaborn>=0.11.0"       # 高级统计图表库
+    "seaborn>=0.11.0",      # 高级统计图表库
+    "geopandas"
 ]
 
 [project.optional-dependencies]
