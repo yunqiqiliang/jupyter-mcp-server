@@ -55,7 +55,17 @@ conda create -n jupyter_mcp_env python=3.10 -y
 conda activate jupyter_mcp_env
 ```
 
-Remember to activate this environment (`conda activate jupyter_mcp_env`) in any terminal before running pip or jupyter lab commands for this project.
+or 
+
+```bash
+# Create a clean environment (Python 3.10 worked during debugging)
+python3.10 -m venv jupyter_mcp_env
+# Activate the environment
+source jupyter_mcp_env/bin/activate
+```
+
+
+Remember to activate this environment in any terminal before running pip or jupyter lab commands for this project.
 
 ### 2. Install Core Jupyter Components:
 
