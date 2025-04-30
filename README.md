@@ -115,6 +115,15 @@ docker build -t jupyter-mcp-server:latest .
 
 ### 7. Start JupyterLab:
 
+#### Start Docker Compose
+
+Download docker compose file from [here](https://github.com/yunqiqiliang/jupyter-mcp-server/blob/main/jupyter_lab_server/docker-compose.yml) 
+```bash
+docker compose up -d
+```
+
+#### Or Start Local Server
+
 Make sure your `jupyter_mcp_env` conda environment is activated.
 
 Create config.json file and set your login infor as below:
