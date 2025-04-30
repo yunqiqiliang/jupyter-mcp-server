@@ -2,7 +2,10 @@
 # Copyright (c) 2025 Alexander Isaev
 # BSD 3-Clause License
 
-FROM python:3.10-slim
+# 使用构建参数指定基础镜像，默认为 python:3.10-slim
+ARG BASE_IMAGE=python:3.10-slim
+FROM ${BASE_IMAGE}
+
 WORKDIR /app
 COPY pyproject.toml pyproject.toml
 COPY LICENSE LICENSE

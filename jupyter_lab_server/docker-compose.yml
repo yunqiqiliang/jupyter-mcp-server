@@ -1,0 +1,22 @@
+services:
+  jupyterlab:
+    image: czqiliang/jupyter_lab_for_mcp:latest
+    container_name: jupyter_lab_for_mcp
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/mcp_notebook
+    environment:
+      JUPYTER_TOKEN: YOUR_SECURE_TOKEN
+      JUPYTER_PORT: 8888
+    working_dir: /mcp_notebook
+    command:
+        - jupyter
+        - lab
+        - --port
+        - "8888"
+        - --IdentityProvider.token
+        - "YOUR_SECURE_TOKEN"
+        - --ip=0.0.0.0
+        - --no-browser
+        - --allow-root

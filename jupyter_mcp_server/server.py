@@ -426,6 +426,7 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
         "在建立session的时候，已经导入from clickzetta.zettapark.session import DataFrame,import clickzetta.zettapark.functions as F, import clickzetta.zettapark.types as T"
         "在后续需要的时候，也可以参考以上导入方式导入需要的模块."
         "在进行数据可视化分析的时候，请注意matplotlib.pyplot生成chart时使用英文描述而不是中文，避免字体问题.或者必须做中文字体显示的话，请使用中文字体的处理方式."
+        "请注意：session.sql返回的列名都是小写."
     ),
     # parameters=(
     #     mcp.parameter(

@@ -30,7 +30,19 @@ build:
 clean: ## clean
 	git clean -fdx
 
-build-docker:
+build-docker: ## Build multi-architecture Docker images
+	docker buildx create --name multiarch-builder --use --driver docker-container || true
+	docker buildx inspect --bootstrap
+	docker buildx build --platform linux/amd64,linux/arm64 \
+        --build-arg BASE_IMAGE=python:3.10-slim \
+        --build-arg BASE_IMAGE=python:3.10-slim \
+        -t czqiliang/jupyter-mcp-server:${VERSION} \
+        -t czqiliang/jupyter-mcp-server:latest \
+		--pull=false \
+		--push \
+        .
+
+build-docker-local-only:
 	docker build -t czqiliang/jupyter-mcp-server:${VERSION} .
 	docker image tag czqiliang/jupyter-mcp-server:${VERSION} czqiliang/jupyter-mcp-server:latest
 
@@ -45,9 +57,12 @@ start-docker:
 pull-docker:
 	docker image pull czqiliang/jupyter-mcp-server:latest
 
-push-docker:
-	docker push czqiliang/jupyter-mcp-server:${VERSION}
-	docker push czqiliang/jupyter-mcp-server:latest
+push-docker: ## Push multi-architecture Docker images
+	@echo "Images are pushed during the build-docker step with --push."
+
+# push-docker:
+# 	docker push czqiliang/jupyter-mcp-server:${VERSION}
+# 	docker push czqiliang/jupyter-mcp-server:latest
 
 claude-linux:
 	NIXPKGS_ALLOW_UNFREE=1 nix run github:k3d3/claude-desktop-linux-flake \
