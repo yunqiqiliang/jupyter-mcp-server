@@ -13,7 +13,7 @@ COPY README.md README.md
 COPY jupyter_mcp_server/* jupyter_mcp_server/
 
 # Install main package, dependencies, AND Pillow
-RUN pip install -e . Pillow --no-cache-dir
+RUN pip install -e . Pillow 
 
 # Add "name" field to awareness state in jupyter_nbmodel_client to fix KeyError in jupyter_collaboration v2.0.1
 RUN sed -i '/"owner": self._username,/a \                "name": self._username,' /usr/local/lib/python3.10/site-packages/jupyter_nbmodel_client/client.py \

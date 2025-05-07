@@ -365,6 +365,7 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
     """
     Adds a cell ('code' or 'markdown') with content at specified index (or appends).
     Uses robust Yjs type creation including YMap for metadata.
+    请注意：session.sql()返回的列名都是小写.
 
     Args:
         content: Source content for the new cell.
@@ -414,20 +415,20 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
         logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
         return f"[Error adding {cell_type} cell: {e}]"
     
-@mcp.tool(
-    name="add_cell_create_clickzetta_session",
-    description=(
-        "Adds a code cell with fixed content to create a Clickzetta session at a specified index (or appends). "
-        "The Clickzetta session/dataframe/functions/types are compatible with Snowflake's Snowpark API, allowing users to operate Clickzetta Dataframe or execute SQL queries "
-        "and perform data operations in the notebook. The session configuration is read from a JSON file, which can "
-        "be specified via the 'config_file' parameter."
-        "创建session后，在其它cell里可以使用session.sql('sql code').collect()或者session.sql('sql code').to_pandas()的方式使用刚创建的session在Notebook里执行SQL获得查询结果."
-        "创建session后，在其它cell里也可以使用刚创建的session在Notebook里操作Clickzetta Dataframe."
-        "在建立session的时候，已经导入from clickzetta.zettapark.session import DataFrame,import clickzetta.zettapark.functions as F, import clickzetta.zettapark.types as T"
-        "在后续需要的时候，也可以参考以上导入方式导入需要的模块."
-        "在进行数据可视化分析的时候，请注意matplotlib.pyplot生成chart时使用英文描述而不是中文，避免字体问题.或者必须做中文字体显示的话，请使用中文字体的处理方式."
-        "请注意：session.sql返回的列名都是小写."
-    ),
+# @mcp.tool(
+#     name="add_cell_create_clickzetta_session",
+#     description=(
+#         "Adds a code cell with fixed content to create a Clickzetta session at a specified index (or appends). "
+#         "The Clickzetta session/dataframe/functions/types are compatible with Snowflake's Snowpark API, allowing users to operate Clickzetta Dataframe or execute SQL queries "
+#         "and perform data operations in the notebook. The session configuration is read from a JSON file, which can "
+#         "be specified via the 'config_file' parameter."
+#         "创建session后，在其它cell里可以使用session.sql('sql code').collect()或者session.sql('sql code').to_pandas()的方式使用刚创建的session在Notebook里执行SQL获得查询结果."
+#         "创建session后，在其它cell里也可以使用刚创建的session在Notebook里操作Clickzetta Dataframe."
+#         "在建立session的时候，已经导入from clickzetta.zettapark.session import DataFrame,import clickzetta.zettapark.functions as F, import clickzetta.zettapark.types as T"
+#         "在后续需要的时候，也可以参考以上导入方式导入需要的模块."
+#         "请注意：session.sql返回的列名都是小写."
+#         "Pls call tool: get_knowledge_to_do_visualization_data_analysis"
+#     ),
     # parameters=(
     #     mcp.parameter(
     #         name="cell_type",
@@ -442,7 +443,8 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
     #         default=None
     #     )
     # )
-)
+# )
+@mcp.tool()
 async def add_cell_create_clickzetta_session(
     cell_type: str = "code", 
     index: Optional[int] = None, 
@@ -450,9 +452,14 @@ async def add_cell_create_clickzetta_session(
 ) -> str:
     """
     Adds a code cell with fixed content to create a Clickzetta session at a specified index (or appends).
-    The Clickzetta session is compatible with Snowflake's Snowpark API, allowing users to execute SQL queries
-    and perform data operations in the notebook. The session configuration is read from a JSON file, which can
+    The Clickzetta Zettapark Python API is compatible with Snowflake's Snowpark Python API, allowing users to execute SQL(compatible with Spark SQL) queries
+    and execute clickzetta.zettapark dataframe operations in the notebook. The session configuration is read from a JSON file, which can
     be specified via the 'config_file' parameter.
+    创建session后，在其它cell里可以使用session.sql('sql code').collect()或者session.sql('sql code').to_pandas()的方式使用刚创建的session在Notebook里执行SQL获得查询结果.
+    创建session后，在其它cell里也可以使用刚创建的session在Notebook里操作Clickzetta Dataframe.
+    在建立session的时候，已经导入from clickzetta.zettapark.session import DataFrame,import clickzetta.zettapark.functions as F, import clickzetta.zettapark.types as T
+    在后续需要的时候，也可以参考以上导入方式导入需要的模块.
+    
 
     Args:
         cell_type: Must be 'code'. 
@@ -569,8 +576,7 @@ async def get_knowledge_to_do_visualization_data_analysis() -> str:
     tool_name = "get_visualization_data_analysis_comments"
     logger.info(f"Executing {tool_name} tool.")
     visualization_data_analysis_comments = ("The package matplotlib required for visualization analysis has been installed."
-                                            "When displaying Chinese characters in charts, please note that the fonts need to be specially processed, "
-                                            "or you can use English fonts directly in the charts.")
+                                            )
 
     return f"[Visualization data analysis comments: {visualization_data_analysis_comments}]"
 
@@ -580,6 +586,7 @@ async def execute_cell(cell_index: int) -> str:
     """
     Sends request to execute a specific code cell by index (fire-and-forget).
     Uses asyncio.to_thread to avoid blocking. Does NOT wait for completion.
+    please be care and check index returned by add_cell_create_clickzetta_session or add_cell.
 
     Args:
         cell_index: The 0-based index of the code cell to execute.
