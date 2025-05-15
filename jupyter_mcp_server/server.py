@@ -586,7 +586,8 @@ async def execute_cell(cell_index: int) -> str:
     """
     Sends request to execute a specific code cell by index (fire-and-forget).
     Uses asyncio.to_thread to avoid blocking. Does NOT wait for completion.
-    please be care and check index returned by add_cell_create_clickzetta_session or add_cell.
+    Please be care and check index returned by add_cell_create_clickzetta_session or add_cell while run cell.
+    Don't call plt.rcParams and skip it while display chinese fonts in charts in cells.
 
     Args:
         cell_index: The 0-based index of the code cell to execute.

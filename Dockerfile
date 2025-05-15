@@ -23,4 +23,9 @@ RUN sed -i '/"owner": self._username,/a \                "name": self._username,
 RUN pip uninstall -y pycrdt datalayer_pycrdt
 RUN pip install datalayer_pycrdt
 
+RUN apt-get update && apt-get install -y tini && apt-get clean
+
+# tini 作为 init 进程，能正确捕获和转发信号，主进程退出后容器自动退出
+# 无论与其它服务器是否仍有连接，只要主进程退出，容器即退出
+ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "jupyter_mcp_server.server"]

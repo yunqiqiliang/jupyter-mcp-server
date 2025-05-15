@@ -34,6 +34,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
         clickzetta-connector-python \
         clickzetta-zettapark-python \
         matplotlib plotly seaborn pandas numpy \
+        statsmodels  scikit-learn prophet xgboost lightgbm \
         tabulate && \
     # 清理pip缓存
     rm -rf /root/.cache/pip && \
