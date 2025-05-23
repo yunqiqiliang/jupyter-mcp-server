@@ -25,7 +25,7 @@ from jupyter_nbmodel_client import (
 from mcp.server.fastmcp import FastMCP
 
 # --- MCP Instance ---
-mcp = FastMCP("jupyter")
+mcp = FastMCP("Zettapark_Jupyter_MCP_Server")
 
 # --- Configuration ---
 NOTEBOOK_PATH = os.getenv("NOTEBOOK_PATH", "notebook.ipynb")
@@ -147,13 +147,14 @@ async def notebook_connection(tool_name: str, modify: bool = False) -> AsyncGene
 
 async def _jupyter_api_request(method: str, api_path: str, **kwargs) -> requests.Response:
     """Makes an authenticated request to the Jupyter Server API asynchronously."""
-    # (Implementation remains the same as before, using global config)
     global SERVER_URL, TOKEN, logger
     base_url = SERVER_URL if SERVER_URL.endswith('/') else SERVER_URL + '/'
-    quoted_api_path = "/".join(quote(part) for part in api_path.lstrip('/').split('/')) # Ensure relative path
+    quoted_api_path = "/".join(quote(part) for part in api_path.lstrip('/').split('/'))  # 确保路径相对
     full_url = urljoin(base_url, f"api/contents/{quoted_api_path}")
     headers = {"Authorization": f"token {TOKEN}"}
-    logger.debug(f"Making Jupyter API {method} request to: {full_url}")
+
+    # 添加日志记录请求 URL 和请求体
+    logger.debug(f"Making Jupyter API {method} request to: {full_url} with body: {kwargs.get('json')}")
 
     try:
         loop = asyncio.get_event_loop()
@@ -169,6 +170,49 @@ async def _jupyter_api_request(method: str, api_path: str, **kwargs) -> requests
         status = e.response.status_code if e.response is not None else "N/A"
         raise ConnectionError(f"API request failed (Status: {status}): {e}") from e
 
+
+async def add_code_cell_on_bottom(code_content: str) -> str:
+    """
+    Adds a code cell with the specified content at the bottom of the notebook.
+
+    Args:
+        code_content: The source code to add to the new code cell.
+
+    Returns:
+        str: A message indicating the success or failure of the operation.
+    """
+    tool_name = "add_code_cell_on_bottom"
+    logger.info(f"Executing {tool_name} with content: {code_content}")
+
+    try:
+        async with notebook_connection(tool_name, modify=True) as notebook:
+            ydoc = notebook._doc
+            ycells = ydoc._ycells
+            num_cells = len(ycells)
+
+            logger.info(f"[{tool_name}] Current number of cells: {num_cells}. Adding new code cell at the bottom.")
+
+            # Prepare the new code cell
+            new_cell_pre_ymap: Dict[str, Any] = {
+                "cell_type": "code",
+                "source": YText(code_content),
+                "metadata": YMap(nbformat.v4.new_code_cell().metadata),
+                "outputs": YArray(),
+                "execution_count": None
+            }
+
+            # Add the new cell at the bottom
+            with ydoc.ydoc.transaction():
+                ycell_map = YMap(new_cell_pre_ymap)
+                ycells.append(ycell_map)
+
+            logger.info(f"[{tool_name}] Successfully added new code cell at index {num_cells}.")
+            return f"Code cell added at index {num_cells}."
+
+    except Exception as e:
+        logger.error(f"[{tool_name}] Failed to add code cell: {e}", exc_info=True)
+        return f"[Error adding code cell: {e}]"
+    
 # --- Helper for Running Temporary Code Cells ---
 
 async def _run_temporary_code(code_content: str, wait_seconds: float, tool_name: str) -> str:
@@ -337,17 +381,32 @@ async def get_file_content(file_path: str, max_image_dim: int = 1024) -> str:
         return f"[Unexpected Error in {tool_name} for '{file_path}': {e}]"
 
 
-@mcp.tool()
-def set_target_notebook(new_notebook_path: str) -> str:
-    """
-    Changes the target notebook path for subsequent tool calls (session only).
-    Path must be relative to Jupyter root and contain no '..'.
+# @mcp.tool()
+# def set_target_notebook(new_notebook_path: str) -> str:
+#     """
+#     Changes the target notebook path for subsequent tool calls (session only).
+#     Path must be relative to Jupyter root and contain no '..'.
 
-    Args:
-        new_notebook_path: The new relative path (e.g., "subdir/notebook.ipynb").
-    """
+#     Args:
+#         new_notebook_path: The new relative path (e.g., "subdir/notebook.ipynb").
+#     """
+#     tool_name = "set_target_notebook"
+#     global NOTEBOOK_PATH # Declare intent to modify the global variable
+#     old_path = NOTEBOOK_PATH
+#     logger.info(f"Executing {tool_name}. Current: '{old_path}', New: '{new_notebook_path}'")
+
+#     if os.path.isabs(new_notebook_path) or ".." in new_notebook_path:
+#         logger.error(f"[{tool_name}] Invalid path: '{new_notebook_path}'.")
+#         return f"[Error: Invalid path '{new_notebook_path}'. Must be relative, no '..'.]"
+
+#     NOTEBOOK_PATH = new_notebook_path
+#     logger.info(f"[{tool_name}] Target notebook path changed to: '{NOTEBOOK_PATH}'")
+#     return f"Target notebook path set to '{NOTEBOOK_PATH}'."
+
+@mcp.tool()
+async def set_target_notebook(new_notebook_path: str) -> str:
     tool_name = "set_target_notebook"
-    global NOTEBOOK_PATH # Declare intent to modify the global variable
+    global NOTEBOOK_PATH
     old_path = NOTEBOOK_PATH
     logger.info(f"Executing {tool_name}. Current: '{old_path}', New: '{new_notebook_path}'")
 
@@ -356,16 +415,71 @@ def set_target_notebook(new_notebook_path: str) -> str:
         return f"[Error: Invalid path '{new_notebook_path}'. Must be relative, no '..'.]"
 
     NOTEBOOK_PATH = new_notebook_path
-    logger.info(f"[{tool_name}] Target notebook path changed to: '{NOTEBOOK_PATH}'")
-    return f"Target notebook path set to '{NOTEBOOK_PATH}'."
+    api_path = new_notebook_path.lstrip("/")
 
+    try:
+        # 检查父目录
+        parent_dir = "/".join(api_path.split("/")[:-1]) or ""
+        logger.debug(f"[{tool_name}] Parent directory resolved to: '{parent_dir}'")
+        if parent_dir:
+            try:
+                await _jupyter_api_request("GET", parent_dir)
+            except ConnectionError as e:
+                # 只处理404，其他错误抛出
+                if "404" in str(e):
+                    logger.info(f"[{tool_name}] Parent directory '{parent_dir}' does not exist. Creating it...")
+                    create_dir_response = await _jupyter_api_request(
+                        "PUT",
+                        parent_dir,
+                        json={"type": "directory"}
+                    )
+                    if create_dir_response.status_code != 201:
+                        logger.error(f"[{tool_name}] Failed to create parent directory '{parent_dir}'. Response: {create_dir_response.text}")
+                        create_dir_response.raise_for_status()
+                else:
+                    raise
+
+        # 检查目标 notebook 是否存在
+        try:
+            await _jupyter_api_request("GET", api_path)
+            logger.info(f"[{tool_name}] Notebook '{new_notebook_path}' already exists on the server.")
+            return f"Target notebook path set to '{new_notebook_path}'."
+        except ConnectionError as e:
+            if "404" in str(e):
+                logger.info(f"[{tool_name}] Notebook '{new_notebook_path}' does not exist. Creating a new notebook...")
+            else:
+                raise
+
+        # 创建新的 notebook
+        notebook_content = nbformat.v4.new_notebook()
+        logger.debug(f"[{tool_name}] Generated notebook content: {notebook_content}")
+        create_response = await _jupyter_api_request(
+            "PUT",
+            api_path,
+            json={
+                "type": "notebook",
+                "content": notebook_content,
+                "format": "json"
+            }
+        )
+        if create_response.status_code == 201:
+            logger.info(f"[{tool_name}] New notebook created at '{new_notebook_path}' on the server.")
+            return f"Target notebook path set to '{new_notebook_path}'. New notebook created."
+        else:
+            logger.error(f"[{tool_name}] Failed to create notebook. Response: {create_response.text}")
+            create_response.raise_for_status()
+
+    except Exception as e:
+        logger.error(f"[{tool_name}] Failed to set target notebook '{new_notebook_path}': {e}", exc_info=True)
+        return f"[Error: Failed to set target notebook '{new_notebook_path}': {e}]"
 
 @mcp.tool()
 async def add_cell(content: str, cell_type: str, index: Optional[int] = None) -> str:
     """
     Adds a cell ('code' or 'markdown') with content at specified index (or appends).
     Uses robust Yjs type creation including YMap for metadata.
-    请注意：session.sql()返回的列名都是小写.
+    请注意：session.sql()返回的表的字段名都是小写.
+    请注意：如果可视化图表要显示中文(此规则仅限中文)，不要调用plt.rcParams、plt.style.use设置显示语言和图标样式的函数。
 
     Args:
         content: Source content for the new cell.
@@ -415,35 +529,6 @@ async def add_cell(content: str, cell_type: str, index: Optional[int] = None) ->
         logger.error(f"[{tool_name}] Tool execution failed: {e}", exc_info=True)
         return f"[Error adding {cell_type} cell: {e}]"
     
-# @mcp.tool(
-#     name="add_cell_create_clickzetta_session",
-#     description=(
-#         "Adds a code cell with fixed content to create a Clickzetta session at a specified index (or appends). "
-#         "The Clickzetta session/dataframe/functions/types are compatible with Snowflake's Snowpark API, allowing users to operate Clickzetta Dataframe or execute SQL queries "
-#         "and perform data operations in the notebook. The session configuration is read from a JSON file, which can "
-#         "be specified via the 'config_file' parameter."
-#         "创建session后，在其它cell里可以使用session.sql('sql code').collect()或者session.sql('sql code').to_pandas()的方式使用刚创建的session在Notebook里执行SQL获得查询结果."
-#         "创建session后，在其它cell里也可以使用刚创建的session在Notebook里操作Clickzetta Dataframe."
-#         "在建立session的时候，已经导入from clickzetta.zettapark.session import DataFrame,import clickzetta.zettapark.functions as F, import clickzetta.zettapark.types as T"
-#         "在后续需要的时候，也可以参考以上导入方式导入需要的模块."
-#         "请注意：session.sql返回的列名都是小写."
-#         "Pls call tool: get_knowledge_to_do_visualization_data_analysis"
-#     ),
-    # parameters=(
-    #     mcp.parameter(
-    #         name="cell_type",
-    #         description="Must be 'code'.",
-    #         type="string",
-    #         default="code"
-    #     ),
-    #     mcp.parameter(
-    #         name="index",
-    #         description="0-based index to insert at; appends if None or invalid.",
-    #         type="integer",
-    #         default=None
-    #     )
-    # )
-# )
 @mcp.tool()
 async def add_cell_create_clickzetta_session(
     cell_type: str = "code", 
