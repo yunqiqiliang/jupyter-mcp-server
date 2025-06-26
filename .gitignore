@@ -124,3 +124,27 @@ untracked_notebooks/*
 docs/.yarn/*
 
 uv.lock
+config.json
+*.ipynb
+!dev/content/notebook.ipynb
+*.png
+/jupyter_lab_server
+/notebook
+/taxi_zones
+
+# Streamlit
+.streamlit/
+streamlit_app/config/*.json
+!streamlit_app/config/*example*.json
+!streamlit_app/config/*template*.json
+
+# Test files
+test_*.py
+debug_*.py
+*_test.py
+*_debug.py
+
+# Logs and reports
+*.log
+*_report.json
+*_report.py
